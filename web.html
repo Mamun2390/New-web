@@ -1,0 +1,82 @@
+<!DOCTYPE html><html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Timer</title>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; }
+        #timer { font-size: 40px; color: blue; border: 2px solid black; display: inline-block; padding: 10px; }
+        #startStop { padding: 10px; font-size: 18px; background: lightgray; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1 id="subject">Loading...</h1>
+    <div id="timer">00:00</div>
+    <h2 id="mode">Mode</h2>
+    <button id="startStop" onclick="toggleTimer()">Start</button><script>
+    let subjects = {
+        'Mon': ['Bengali', 'Life Science', 'History'],
+        'Wed': ['Bengali', 'Life Science', 'History'],
+        'Fri': ['Bengali', 'Life Science', 'History'],
+        'Tue': ['English', 'Physical Science', 'Geography'],
+        'Thu': ['English', 'Physical Science', 'Geography'],
+        'Sat': ['English', 'Physical Science', 'Geography']
+    };
+    
+    let today = new Date().toLocaleString('en-us', { weekday: 'short' });
+    let subjectIndex = localStorage.getItem('subjectIndex') ? parseInt(localStorage.getItem('subjectIndex')) : 0;
+    let currentSubject = subjects[today] ? subjects[today][subjectIndex] : 'No Study';
+    let mode = localStorage.getItem('mode') || 'Reading';
+    let remainingTime = localStorage.getItem('remainingTime') ? parseInt(localStorage.getItem('remainingTime')) : 1800;
+    let timerRunning = false;
+    let interval;
+
+    document.getElementById("subject").innerText = currentSubject;
+    document.getElementById("mode").innerText = mode;
+    updateTimerDisplay();
+
+    function toggleTimer() {
+        if (timerRunning) {
+            clearInterval(interval);
+            document.getElementById("startStop").innerText = "Start";
+        } else {
+            interval = setInterval(updateTimer, 1000);
+            document.getElementById("startStop").innerText = "Stop";
+        }
+        timerRunning = !timerRunning;
+    }
+
+    function updateTimer() {
+        if (remainingTime > 0) {
+            remainingTime--;
+            localStorage.setItem('remainingTime', remainingTime);
+        } else {
+            switchMode();
+        }
+        updateTimerDisplay();
+    }
+
+    function switchMode() {
+        mode = (mode === 'Reading') ? 'Rest' : 'Reading';
+        remainingTime = (mode === 'Reading') ? 1800 : 600; // 30 min or 10 min
+        document.getElementById("mode").innerText = mode;
+        localStorage.setItem('mode', mode);
+        localStorage.setItem('remainingTime', remainingTime);
+        
+        if (mode === 'Reading') {
+            subjectIndex = (subjectIndex + 1) % 3;
+            localStorage.setItem('subjectIndex', subjectIndex);
+            currentSubject = subjects[today] ? subjects[today][subjectIndex] : 'No Study';
+            document.getElementById("subject").innerText = currentSubject;
+        }
+    }
+
+    function updateTimerDisplay() {
+        let minutes = Math.floor(remainingTime / 60);
+        let seconds = remainingTime % 60;
+        document.getElementById("timer").innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+</script>
+
+</body>
+</html>
